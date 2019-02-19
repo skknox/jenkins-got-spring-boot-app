@@ -1,0 +1,30 @@
+apiVersion: skaffold/v1beta2
+kind: Config
+build:
+  artifacts:
+  - image: changeme
+    context: .
+    docker: {}
+  tagPolicy:
+    envTemplate:
+      template: '{{.DOCKER_REGISTRY}}/spring-guides/gs-spring-boot:{{.VERSION}}'
+  local: {}
+deploy:
+  kubectl: {}
+profiles:
+- name: dev
+  build:
+    artifacts:
+    - docker: {}
+    tagPolicy:
+      envTemplate:
+        template: '{{.DOCKER_REGISTRY}}/spring-guides/gs-spring-boot:{{.DIGEST_HEX}}'
+    local: {}
+  deploy:
+    helm:
+      releases:
+      - name: gs-spring-boot
+        chartPath: charts/gs-spring-boot
+        setValueTemplates:
+          image.repository: '{{.DOCKER_REGISTRY}}/spring-guides/gs-spring-boot'
+          image.tag: '{{.DIGEST_HEX}}'
